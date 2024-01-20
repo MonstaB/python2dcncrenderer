@@ -81,7 +81,7 @@ def plot_coordinates(coordinates):
 
 
 if __name__ == "__main__":
-    file_path = "09026417_001.nc"
+    file_path = "test.txt"
     output_file_path = "coordinates_output.txt"
 
     nc_content = read_nc_file(file_path)
