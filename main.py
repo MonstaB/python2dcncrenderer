@@ -1,91 +1,113 @@
 import re
 import matplotlib.pyplot as plt
+from matplotlib.patches import Rectangle
+from matplotlib.lines import Line2D
 
+# File paths
+input_file_path = "test.txt"
+output_file_path = "output.txt"
 
-def read_nc_file(file_path):
-    with open(file_path, 'r') as file:
-        content = file.readlines()
-    return content
+# Variables to store panel size and Z value
+panel_size = None
+original_z_value = None
+current_z_value = None
 
+# Variables to store color information
+original_color = "darkred"
+current_color = "darkred"
 
-def parse_coordinates(content):
-    pattern = re.compile(r'G[01] X([-+]?\d*\.\d+) Y([-+]?\d*\.\d+)')
-    title_pattern = re.compile(r'\(TOOL - (.*?)\)')
+# Lists to store legend entries and corresponding colors
+legend_entries = []
+legend_colors = []
 
-    coordinates = []
-    current_tool = None
-    current_group = []
+# Lists to store line coordinates and colors
+lines_x = []
+lines_y = []
+lines_colors = []
 
-    for line in content:
-        match = pattern.search(line)
-        title_match = title_pattern.search(line)
-
-        if title_match:
-            # Set the title for the plot
-            current_tool = title_match.group(1)
-            coordinates.append((current_tool, 'k', []))
+# Open and read the input file
+with open(input_file_path, 'r') as file:
+    for line in file:
+        # Ignore the line "G0 G90 G53 Z0."
+        if "G0 G90 G53 Z0." in line:
             continue
 
-        if match:
-            current_group.append((current_tool, float(match.group(1)), float(match.group(2))))
+        # Extract panel size and Z value from the first part of the file
+        if line.startswith("G100"):
+            values = re.findall(r'[-+]?\d*\.\d+|\d+', line)
+            panel_size = (float(values[1]), float(values[2]))
+            original_z_value = float(values[3])
+            current_z_value = original_z_value
 
-    if current_tool is not None:
-        coordinates[-1] = (current_tool, 'k', current_group)
+        # Extract material name for title
+        elif "(MATERIAL NAME:" in line:
+            title = re.search(r'\((MATERIAL NAME:.*?)\)', line).group(1)
 
-    return coordinates
+        # Extract tool information for legend and color
+        elif "(TOOL -" in line:
+            tool_info = re.search(r'\((TOOL - .*?)\)', line).group(1)
+            legend_entries.append(tool_info)
+            legend_colors.append(current_color)
 
+        # Process G0 or G1 lines for color changes and store line coordinates
+        elif line.startswith("G0") or line.startswith("G1"):
+            values = re.findall(r'[-+]?\d*\.\d+|\d+', line)
 
-def write_coordinates_to_file(coordinates, output_file_path):
-    with open(output_file_path, 'w') as file:
-        for tool, _, points in coordinates:
-            file.write(f"Tool - {tool}\n")
-            for _, x, y in points:
-                file.write(f"X: {x}, Y: {y}\n")
-            file.write('\n')
+            # Check for Z value
+            if len(values) > 3:
+                current_z_value = float(values[3])
 
+                # Check if Z value is higher or lower than the original
+                if current_z_value > original_z_value:
+                    current_color = "lightgrey"
+                else:
+                    current_color = original_color
 
-def plot_coordinates(coordinates):
-    fig, ax = plt.subplots()
-    plt.axis('equal')  # Set equal aspect ratio
+            # Check for X and Y values
+            if len(values) > 2:
+                x_value, y_value = float(values[1]), float(values[2])
 
-    title_set = False
+                # Store line coordinates and color
+                lines_x.append(x_value)
+                lines_y.append(y_value)
+                lines_colors.append(current_color)
 
-    for tool, color, points in coordinates:
-        if not points:
-            # Skip empty points (no coordinates for this tool)
-            continue
+# Dump collected data into output file for debugging
+with open(output_file_path, 'w') as output_file:
+    output_file.write("Panel Size: {}\n".format(panel_size))
+    output_file.write("Original Z Value: {}\n".format(original_z_value))
+    output_file.write("Title: {}\n".format(title))
+    output_file.write("Legend Entries: {}\n".format(legend_entries))
+    output_file.write("Legend Colors: {}\n".format(legend_colors))
+    output_file.write("Lines X: {}\n".format(lines_x))
+    output_file.write("Lines Y: {}\n".format(lines_y))
+    output_file.write("Lines Colors: {}\n".format(lines_colors))
 
-        if not title_set:
-            ax.set_title(tool)  # Set the title
-            title_set = True
+# Draw rectangle using Matplotlib
+fig, ax = plt.subplots()
+rectangle = Rectangle((0, 0), panel_size[0], panel_size[1], edgecolor='black', linewidth=1, facecolor='none')
+ax.add_patch(rectangle)
 
-        try:
-            # Extract x and y coordinates only for valid points
-            x, y = zip(*[(point[1], point[2]) for point in points])
+# Plot lines with colors based on conditions
+for color, label in zip(legend_colors, legend_entries):
+    ax.plot([], [], marker='o', color=color, label=label)
 
-            # Use a line instead of dots
-            ax.plot(x, y, label=f'Tool - {tool}', color=color, marker='o', markersize=2, linestyle='-')
-        except IndexError as e:
-            print(f"Error processing Tool {tool}: {e}")
-            print(f"Skipping Tool {tool} due to IndexError.")
+# Plot lines with colors based on conditions
+for i in range(len(lines_x) - 1):
+    x_values = [lines_x[i], lines_x[i + 1]]
+    y_values = [lines_y[i], lines_y[i + 1]]
+    color = lines_colors[i]
+    ax.plot(x_values, y_values, color=color, linewidth=1)
 
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
+# Set plot limits based on panel size
+ax.set_xlim(-20, panel_size[0] + 20)
+ax.set_ylim(-20, panel_size[1] + 20)
 
-    ax.legend(loc='upper left', bbox_to_anchor=(1, 1))
+# Set plot title
+plt.title(title)
 
-    try:
-        plt.show()
-    except KeyboardInterrupt:
-        print("Plotting interrupted.")
+# Show the legend
+ax.legend()
 
-
-if __name__ == "__main__":
-    file_path = "test.txt"
-    output_file_path = "coordinates_output.txt"
-
-    nc_content = read_nc_file(file_path)
-    coordinates = parse_coordinates(nc_content)
-    write_coordinates_to_file(coordinates, output_file_path)
-    plot_coordinates(coordinates)
-    print(coordinates)
+# Show the plot
+plt.show()
