@@ -4,13 +4,14 @@ from matplotlib.patches import Rectangle
 from matplotlib.lines import Line2D
 
 # File paths
-input_file_path = "test.txt"
+input_file_path = "test2.txt"
 output_file_path = "output.txt"
 
 # Variables to store panel size and Z value
 panel_size = None
 original_z_value = None
 current_z_value = None
+nulll = "0"
 
 # Variables to store color information
 original_color = "darkred"
@@ -24,13 +25,18 @@ legend_colors = []
 lines_x = []
 lines_y = []
 lines_colors = []
+arcs_radii = []
+arcs_directions = []  # 1 for G2 (clockwise), -1 for G3 (counterclockwise)
+arcs_colors = []
 
 # Open and read the input file
 with open(input_file_path, 'r') as file:
     for line in file:
-        # Ignore the line "G0 G90 G53 Z0."
-        if "G0 G90 G53 Z0." in line:
+        # Ignore the line "G0 G90"
+        if "G0 G90" in line:
             continue
+
+
 
         # Extract panel size and Z value from the first part of the file
         if line.startswith("G100"):
@@ -53,24 +59,168 @@ with open(input_file_path, 'r') as file:
         elif line.startswith("G0") or line.startswith("G1"):
             values = re.findall(r'[-+]?\d*\.\d+|\d+', line)
 
-            # Check for Z value
-            if len(values) > 3:
-                current_z_value = float(values[3])
 
-                # Check if Z value is higher or lower than the original
+            # Check for Z value
+            if len(values) == 2:
+                current_z_value = float(values[1])
+
+                       # Check if Z value is higher or lower than the original
                 if current_z_value > original_z_value:
                     current_color = "lightgrey"
                 else:
                     current_color = original_color
 
-            # Check for X and Y values
-            if len(values) > 2:
+            if len(values) == 3:
+                if line.startswith("G1 X"):
+                    x_value, y_value = float(values[1]), float(values[2])
+                    lines_x.append(x_value)
+                    lines_y.append(y_value)
+                    lines_colors.append(current_color)
+                    arcs_radii.append(nulll)
+                    arcs_directions.append(nulll)
+
+                else:
+
+                    current_z_value = float(values[1])
+
+
+
+                # Check if Z value is higher or lower than the original
+                    if current_z_value > original_z_value:
+                        current_color = "lightgrey"
+                    else:
+                        current_color = original_color
+
+
+
+
+
+            if len(values) == 4:
+                if line.startswith("G1 X"):
+                    x_value, y_value = float(values[1]), float(values[2])
+                    lines_x.append(x_value)
+                    lines_y.append(y_value)
+                    lines_colors.append(current_color)
+                    arcs_radii.append(nulll)
+                    arcs_directions.append(nulll)
+
+
+
+                else:
+                    current_z_value = float(values[3])
+                    x_value, y_value = float(values[1]), float(values[2])
+
+                # Check if Z value is higher or lower than the original
+                    if current_z_value > original_z_value:
+                        current_color = "lightgrey"
+                        lines_x.append(x_value)
+                        lines_y.append(y_value)
+                        lines_colors.append(current_color)
+                        arcs_radii.append(nulll)
+                        arcs_directions.append(nulll)
+                    else:
+                        current_color = original_color
+                        lines_x.append(x_value)
+                        lines_y.append(y_value)
+                        lines_colors.append(current_color)
+                        arcs_radii.append(nulll)
+                        arcs_directions.append(nulll)
+
+
+            if len(values) == 5:
+                current_z_value = float(values[3])
                 x_value, y_value = float(values[1]), float(values[2])
 
-                # Store line coordinates and color
+                # Check if Z value is higher or lower than the original
+                if current_z_value > original_z_value:
+                    current_color = "lightgrey"
+                    lines_x.append(x_value)
+                    lines_y.append(y_value)
+                    lines_colors.append(current_color)
+                    arcs_radii.append(nulll)
+                    arcs_directions.append(nulll)
+                else:
+                    current_color = original_color
+                    lines_x.append(x_value)
+                    lines_y.append(y_value)
+                    lines_colors.append(current_color)
+                    arcs_radii.append(nulll)
+                    arcs_directions.append(nulll)
+
+
+        elif line.startswith("G2") or line.startswith("G3"):
+            values = re.findall(r'[-+]?\d*\.\d+|\d+', line)
+
+            if len(values) == 5:
+                if "Z" in line:
+                    current_z_value = float(values[3])
+                    x_value, y_value = float(values[1]), float(values[2])
+                    r_value = float(values[4])
+                    if line.startswith("G2"):
+                        direction = 1  # Clockwise
+                    elif line.startswith("G3"):
+                        direction = -1  # Counterclockwise
+
+                    if current_z_value > original_z_value:
+                        current_color = "lightgrey"
+                        lines_x.append(x_value)
+                        lines_y.append(y_value)
+                        lines_colors.append(current_color)
+                        arcs_radii.append(r_value)
+                        arcs_directions.append(direction)
+                    else:
+                        current_color = original_color
+                        lines_x.append(x_value)
+                        lines_y.append(y_value)
+                        lines_colors.append(current_color)
+                        arcs_radii.append(r_value)
+                        arcs_directions.append(direction)
+                else:
+
+
+
+                    x_value, y_value = float(values[1]), float(values[2])
+                    r_value = float(values[3])
+                    if line.startswith("G2"):
+                        direction = 1  # Clockwise
+                    elif line.startswith("G3"):
+                        direction = -1  # Counterclockwise
+
+                    current_color = original_color
+                    lines_x.append(x_value)
+                    lines_y.append(y_value)
+                    lines_colors.append(current_color)
+                    arcs_radii.append(r_value)
+                    arcs_directions.append(direction)
+
+            if len(values) == 4:
+                x_value, y_value = float(values[1]), float(values[2])
+                r_value = float(values[3])
+                if line.startswith("G2"):
+                    direction = 1  # Clockwise
+                elif line.startswith("G3"):
+                    direction = -1  # Counterclockwise
+
+                current_color = original_color
                 lines_x.append(x_value)
                 lines_y.append(y_value)
                 lines_colors.append(current_color)
+                arcs_radii.append(r_value)
+                arcs_directions.append(direction)
+
+
+
+
+
+
+            # Check for X and Y values
+#            if len(values) > 2:
+#                x_value, y_value = float(values[1]), float(values[2])
+#
+#                # Store line coordinates and color
+#                lines_x.append(x_value)
+#                lines_y.append(y_value)
+#                lines_colors.append(current_color)
 
 # Dump collected data into output file for debugging
 with open(output_file_path, 'w') as output_file:
@@ -82,6 +232,8 @@ with open(output_file_path, 'w') as output_file:
     output_file.write("Lines X: {}\n".format(lines_x))
     output_file.write("Lines Y: {}\n".format(lines_y))
     output_file.write("Lines Colors: {}\n".format(lines_colors))
+    output_file.write("Arc Radii: {}\n".format(arcs_radii))
+    output_file.write("Arcs Direction: {}\n".format(arcs_directions))
 
 # Draw rectangle using Matplotlib
 fig, ax = plt.subplots()
@@ -96,12 +248,12 @@ for color, label in zip(legend_colors, legend_entries):
 for i in range(len(lines_x) - 1):
     x_values = [lines_x[i], lines_x[i + 1]]
     y_values = [lines_y[i], lines_y[i + 1]]
-    color = lines_colors[i]
+    color = lines_colors[i + 1]
     ax.plot(x_values, y_values, color=color, linewidth=1)
 
 # Set plot limits based on panel size
-ax.set_xlim(-20, panel_size[0] + 20)
-ax.set_ylim(-20, panel_size[1] + 20)
+ax.set_xlim(-500, panel_size[0] + 500)
+ax.set_ylim(-500, panel_size[1] + 500)
 
 # Set plot title
 plt.title(title)
