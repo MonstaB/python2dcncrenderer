@@ -1,17 +1,19 @@
 import re
+from math import atan2, degrees, cos, sin, pi
+
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
+from matplotlib.patches import Rectangle, Arc
 from matplotlib.lines import Line2D
 
 # File paths
-input_file_path = "test2.txt"
+input_file_path = "new.txt"
 output_file_path = "output.txt"
 
 # Variables to store panel size and Z value
 panel_size = None
 original_z_value = None
 current_z_value = None
-nulll = "0"
+nulll = 0
 
 # Variables to store color information
 original_color = "darkred"
@@ -76,7 +78,7 @@ with open(input_file_path, 'r') as file:
                     lines_y.append(y_value)
                     lines_colors.append(current_color)
                     arcs_radii.append(nulll)
-                    arcs_directions.append(nulll)
+                    arcs_directions.append(int(nulll))
 
                 else:
 
@@ -95,7 +97,7 @@ with open(input_file_path, 'r') as file:
                     lines_y.append(y_value)
                     lines_colors.append(current_color)
                     arcs_radii.append(nulll)
-                    arcs_directions.append(nulll)
+                    arcs_directions.append(int(nulll))
 
                 elif line.startswith("G0 G59"):
                     x_value, y_value = float(values[2]), float(values[3])
@@ -106,14 +108,14 @@ with open(input_file_path, 'r') as file:
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
                     else:
                         current_color = original_color
                         lines_x.append(x_value)
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
 
                 else:
                     current_z_value = float(values[3])
@@ -126,14 +128,14 @@ with open(input_file_path, 'r') as file:
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
                     else:
                         current_color = original_color
                         lines_x.append(x_value)
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
 
             if len(values) == 5:
                 if line.startswith("G1 G41"):
@@ -145,14 +147,14 @@ with open(input_file_path, 'r') as file:
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
                     else:
                         current_color = original_color
                         lines_x.append(x_value)
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
 
                 if line.startswith("G1 G40"):
                     x_value, y_value = float(values[2]), float(values[3])
@@ -162,14 +164,14 @@ with open(input_file_path, 'r') as file:
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
                     else:
                         current_color = original_color
                         lines_x.append(x_value)
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
 
                 else:
                     current_z_value = float(values[3])
@@ -182,14 +184,14 @@ with open(input_file_path, 'r') as file:
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
                     else:
                         current_color = original_color
                         lines_x.append(x_value)
                         lines_y.append(y_value)
                         lines_colors.append(current_color)
                         arcs_radii.append(nulll)
-                        arcs_directions.append(nulll)
+                        arcs_directions.append(int(nulll))
 
             if len(values) == 6:
                 current_z_value = float(values[4])
@@ -202,14 +204,14 @@ with open(input_file_path, 'r') as file:
                     lines_y.append(y_value)
                     lines_colors.append(current_color)
                     arcs_radii.append(nulll)
-                    arcs_directions.append(nulll)
+                    arcs_directions.append(int(nulll))
                 else:
                     current_color = original_color
                     lines_x.append(x_value)
                     lines_y.append(y_value)
                     lines_colors.append(current_color)
                     arcs_radii.append(nulll)
-                    arcs_directions.append(nulll)
+                    arcs_directions.append(int(nulll))
 
         elif line.startswith("G2") or line.startswith("G3"):
             values = re.findall(r'[-+]?\d*\.\d+|\d+', line)
@@ -220,9 +222,9 @@ with open(input_file_path, 'r') as file:
                     x_value, y_value = float(values[1]), float(values[2])
                     r_value = float(values[4])
                     if line.startswith("G2"):
-                        direction = 1  # Clockwise
+                        direction = 0-1  # Clockwise
                     elif line.startswith("G3"):
-                        direction = -1  # Counterclockwise
+                        direction = 1  # Counterclockwise
 
                     if current_z_value > original_z_value:
                         current_color = "lightgrey"
@@ -242,9 +244,9 @@ with open(input_file_path, 'r') as file:
                     x_value, y_value = float(values[1]), float(values[2])
                     r_value = float(values[3])
                     if line.startswith("G2"):
-                        direction = 1  # Clockwise
+                        direction = 0-1  # Clockwise
                     elif line.startswith("G3"):
-                        direction = -1  # Counterclockwise
+                        direction = 1  # Counterclockwise
 
                     current_color = original_color
                     lines_x.append(x_value)
@@ -257,9 +259,9 @@ with open(input_file_path, 'r') as file:
                 x_value, y_value = float(values[1]), float(values[2])
                 r_value = float(values[3])
                 if line.startswith("G2"):
-                    direction = 1  # Clockwise
+                    direction = 0-1  # Clockwise
                 elif line.startswith("G3"):
-                    direction = -1  # Counterclockwise
+                    direction = 1  # Counterclockwise
 
                 current_color = original_color
                 lines_x.append(x_value)
@@ -273,9 +275,9 @@ with open(input_file_path, 'r') as file:
                 x_value, y_value = float(values[1]), float(values[2])
                 r_value = float(values[4])
                 if line.startswith("G2"):
-                    direction = 1  # Clockwise
+                    direction = 0-1  # Clockwise
                 elif line.startswith("G3"):
-                    direction = -1  # Counterclockwise
+                    direction = 1  # Counterclockwise
 
                 if current_z_value > original_z_value:
                     current_color = "lightgrey"
@@ -309,20 +311,64 @@ with open(output_file_path, 'w') as output_file:
     output_file.write("Arcs Direction: {}\n".format(arcs_directions))
 
 # Draw rectangle using Matplotlib
+
 fig, ax = plt.subplots()
 rectangle = Rectangle((0, 0), panel_size[0], panel_size[1], edgecolor='black', linewidth=1, facecolor='none')
 ax.add_patch(rectangle)
+ax.set_aspect('equal', adjustable='box')
 
 # Plot lines with colors based on conditions
 for color, label in zip(legend_colors, legend_entries):
     ax.plot([], [], marker='o', color=color, label=label)
 
 # Plot lines with colors based on conditions
-for i in range(len(lines_x) - 1):
-    x_values = [lines_x[i], lines_x[i + 1]]
-    y_values = [lines_y[i], lines_y[i + 1]]
-    color = lines_colors[i + 1]
-    ax.plot(x_values, y_values, color=color, linewidth=1)
+
+# Plot lines and arcs with colors based on conditions
+for i in range(1, len(lines_x)):
+    if arcs_directions[i] == 0:
+        x_values = [lines_x[i-1], lines_x[i]]
+        y_values = [lines_y[i-1], lines_y[i]]
+        color = lines_colors[i]
+        ax.plot(x_values, y_values, color=color, linewidth=1)
+    else:
+        x_start, y_start = lines_x[i-1], lines_y[i-1]
+        x_end, y_end = lines_x[i], lines_y[i]
+        radius = arcs_radii[i]
+        direction = arcs_directions[i]
+        color = lines_colors[i]
+
+        # Calculate the center of the arc
+        dx = x_end - x_start
+        dy = y_end - y_start
+        distance = (dx**2 + dy**2)**0.5
+        angle = atan2(dy, dx)
+
+        if radius**2 < (distance / 2)**2:
+            continue  # Invalid arc, skip it
+
+        h = (radius**2 - (distance / 2)**2)**0.5
+        cx = (x_start + x_end) / 2 - direction * h * sin(angle)
+        cy = (y_start + y_end) / 2 + direction * h * cos(angle)
+
+        # Calculate start and end angles for the arc
+        start_angle = degrees(atan2(y_start - cy, x_start - cx))
+        end_angle = degrees(atan2(y_end - cy, x_end - cx))
+
+        # Adjust for direction
+        if direction == -1:  # Clockwise
+            if start_angle < end_angle:
+                start_angle += 360
+        else:  # Counterclockwise
+            if start_angle > end_angle:
+                end_angle += 360
+
+        arc = Arc((cx, cy), radius * 2, radius * 2, angle=0, theta1=start_angle, theta2=end_angle, color=color, linewidth=1)
+        ax.add_patch(arc)
+
+
+
+
+
 
 # Set plot limits based on panel size
 ax.set_xlim(-50, panel_size[0] + 50)
@@ -336,3 +382,4 @@ ax.legend()
 
 # Show the plot
 plt.show()
+
