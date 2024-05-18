@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle, Arc
 from matplotlib.lines import Line2D
 
 # File paths
-input_file_path = "new.txt"
+input_file_path = "test1.txt"
 output_file_path = "output.txt"
 
 # Variables to store panel size and Z value
@@ -16,8 +16,17 @@ current_z_value = None
 nulll = 0
 
 # Variables to store color information
-original_color = "darkred"
-current_color = "darkred"
+
+color_list = [
+    "darkred", "darkblue", "darkgreen", "darkorange",
+    "purple", "brown", "pink", "olive", "cyan", "magenta"
+]
+color_index = 0
+
+# Variables to store color information
+original_color = color_list[color_index]
+current_color = original_color
+
 
 # Lists to store legend entries and corresponding colors
 legend_entries = []
@@ -53,7 +62,9 @@ with open(input_file_path, 'r') as file:
         elif "(TOOL -" in line:
             tool_info = re.search(r'\((TOOL - .*?)\)', line).group(1)
             legend_entries.append(tool_info)
-            legend_colors.append(current_color)
+            legend_colors.append(color_list[color_index])
+            original_color = color_list[color_index]
+            color_index = color_index + 1
 
         # Process G0 or G1 lines for color changes and store line coordinates
 
@@ -258,8 +269,11 @@ with open(input_file_path, 'r') as file:
             if len(values) == 4:
                 x_value, y_value = float(values[1]), float(values[2])
                 r_value = float(values[3])
-                if line.startswith("G2"):
+
+                if line.startswith("G2") and r_value < 4000:
                     direction = 0-1  # Clockwise
+                elif line.startswith("G2") and r_value > 4000:
+                    direction = 1
                 elif line.startswith("G3"):
                     direction = 1  # Counterclockwise
 
@@ -275,9 +289,9 @@ with open(input_file_path, 'r') as file:
                 x_value, y_value = float(values[1]), float(values[2])
                 r_value = float(values[4])
                 if line.startswith("G2"):
-                    direction = 0-1  # Clockwise
+                    direction = 1  # Clockwise
                 elif line.startswith("G3"):
-                    direction = 1  # Counterclockwise
+                    direction = 0-1  # Counterclockwise
 
                 if current_z_value > original_z_value:
                     current_color = "lightgrey"
