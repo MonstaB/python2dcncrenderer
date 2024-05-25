@@ -6,7 +6,7 @@ from matplotlib.patches import Rectangle, Arc
 from matplotlib.lines import Line2D
 
 # File paths
-input_file_path = "test1.txt"
+input_file_path = "new.txt"
 output_file_path = "output.txt"
 
 # Variables to store panel size and Z value
@@ -18,8 +18,8 @@ nulll = 0
 # Variables to store color information
 
 color_list = [
-    "darkred", "darkblue", "darkgreen", "darkorange",
-    "purple", "brown", "pink", "olive", "cyan", "magenta"
+    "maroon", "gold", "darkgreen", "darkorange",
+    "lime", "greenyellow", "pink", "deepskyblue", "cyan", "magenta"
 ]
 color_index = 0
 
@@ -344,6 +344,11 @@ for i in range(1, len(lines_x)):
         y_values = [lines_y[i-1], lines_y[i]]
         color = lines_colors[i]
         ax.plot(x_values, y_values, color=color, linewidth=1)
+        if x_values[0] == x_values[1]:
+            if y_values[0] == y_values[1]:
+                ax.scatter(x_values[1], y_values[1], color=color, s=9)
+                continue
+
     else:
         x_start, y_start = lines_x[i-1], lines_y[i-1]
         x_end, y_end = lines_x[i], lines_y[i]
@@ -385,8 +390,8 @@ for i in range(1, len(lines_x)):
 
 
 # Set plot limits based on panel size
-ax.set_xlim(-50, panel_size[0] + 50)
-ax.set_ylim(-50, panel_size[1] + 50)
+ax.set_xlim(-30, panel_size[0] + 30)
+ax.set_ylim(-30, panel_size[1] + 30)
 
 # Set plot title
 plt.title(title)
